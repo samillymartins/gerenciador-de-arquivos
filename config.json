@@ -1,0 +1,24 @@
+{
+    "Documentos": [
+        ".pdf",
+        ".docx",
+        ".txt"
+    ],
+    "Imagens": [
+        ".jpg",
+        ".jpeg",
+        ".png"
+    ],
+    "Videos": [
+        ".mp4",
+        ".avi"
+    ],
+    "Planilhas": [
+        ".xlsx",
+        ".csv"
+    ],
+    "Executáveis": [
+        ".exe",
+        ".msi"
+    ]
+}
