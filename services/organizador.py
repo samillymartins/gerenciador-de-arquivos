@@ -1,12 +1,14 @@
 import os
 import shutil
 import time
+from datetime import datetime
 
 class Organizador:
-    def __init__(self, pasta_alvo, regras, logger):
+    def __init__(self, pasta_alvo, regras, logger, database):
         self.pasta_alvo = pasta_alvo
         self.regras = regras
         self.logger = logger
+        self.database = database
 
     def exibir_resumo(self, tempo_total):
 
@@ -63,8 +65,15 @@ class Organizador:
                     try: 
                         shutil.move(caminho_arquivo, destino)
                         self.movidos += 1
+                        
                         self.estatisticas[pasta] = self.estatisticas.get(pasta, 0) + 1
+                        
+                        data_movimentacao = datetime.now()
+
+                        self.database.salvar_movimentacao(arquivo, extensao, pasta, self.pasta_alvo, destino, data_movimentacao)
+                        
                         self.logger.info(f"Movendo '{arquivo}' para '{destino}'.")
+                        
                         movido = True
                         break
                     except Exception as erro:
