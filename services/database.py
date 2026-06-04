@@ -45,3 +45,63 @@ class DatabaseService:
         (arquivo, extensao, categoria, origem, destino, data_movimentacao))
 
         self.conexao.commit()
+
+    def total_movimentacoes(self):
+
+        cursor = self.conexao.cursor()
+
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM movimentacoes
+        """)
+
+        return cursor.fetchone()[0]
+    
+    def ultimas_movimentacoes(self, limite=10):
+
+        cursor = self.conexao.cursor()
+
+        cursor.execute("""
+            SELECT
+                arquivo,
+                categoria,
+                data_movimentacao
+            FROM movimentacoes
+            ORDER BY data_movimentacao DESC
+            LIMIT ?
+        """, (limite,))
+
+        return cursor.fetchall()
+    
+    def estatisticas_por_categoria(self):
+
+        cursor = self.conexao.cursor()
+
+        cursor.execute("""
+            SELECT
+                categoria,
+                COUNT(*)
+            FROM movimentacoes
+            GROUP BY categoria
+            ORDER BY COUNT(*) DESC
+        """)
+
+        return cursor.fetchall()
+    
+    def gerar_relatorio(self):
+
+        print("\n===== RELATÓRIO =====\n")
+        print(f"Total movimentações: {self.total_movimentacoes()}")
+
+        print("\nCategorias:")
+        for categoria, total in (self.estatisticas_por_categoria()):
+            print(f"{categoria}: {total}")
+
+        print("\nÚltimos arquivos:")
+        for arquivo, categoria, data in (self.ultimas_movimentacoes()):
+
+            print(
+                f"{arquivo} "
+                f"({categoria}) "
+                f"- {data}"
+            )

@@ -90,3 +90,6 @@ class Organizador:
         self.exibir_resumo(tempo_total)
 
         self.logger.info("Organização concluída!")
+
+    def gerar_relatorio(self):
+        self.database.gerar_relatorio()
