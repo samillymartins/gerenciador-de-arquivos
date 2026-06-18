@@ -13,5 +13,7 @@ with open("config.json", "r", encoding="utf-8") as arquivo:
 
 organizador = Organizador(pasta_alvo=PASTA_ALVO, regras=regras, logger=logger, database=database)
 
+organizador.encontrar_duplicados()
+organizador.exibir_duplicados()
 organizador.organizar()
 organizador.gerar_relatorio()
