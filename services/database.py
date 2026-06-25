@@ -1,13 +1,24 @@
 import sqlite3
 import os
 
-
 class DatabaseService:
 
-    def __init__(self):
-        os.makedirs("database", exist_ok=True)
-        self.conexao = sqlite3.connect("database/organizador.db")
+    def __init__(self, caminho_db, logger=None):
+        self.logger = logger
+        
+        os.makedirs(os.path.dirname(os.path.abspath(caminho_db)), exist_ok=True)
+        
+        self.conexao = sqlite3.connect(caminho_db, check_same_thread=False)
         self.criar_tabela()
+        
+    def close(self):
+        self.conexao.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
     def criar_tabela(self):
 
