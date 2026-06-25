@@ -2,12 +2,14 @@
     "Documentos": [
         ".pdf",
         ".docx",
-        ".txt"
+        ".txt",
+        ".doc"
     ],
     "Imagens": [
         ".jpg",
         ".jpeg",
-        ".png"
+        ".png",
+        ".HEIC"
     ],
     "Videos": [
         ".mp4",
@@ -24,5 +26,8 @@
     "Comprimidos": [
         ".zip",
         ".rar"
+    ],
+    "Editáveis": [
+        ".psd"
     ]
 }
