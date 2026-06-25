@@ -20,5 +20,9 @@
     "Executáveis": [
         ".exe",
         ".msi"
+    ],
+    "Comprimidos": [
+        ".zip",
+        ".rar"
     ]
 }
