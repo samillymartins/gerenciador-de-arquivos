@@ -16,7 +16,7 @@ database = DatabaseService(logger=logger, caminho_db=db_path)
 config_path = os.path.join(PROJETO_DIR, "config.json")
 
 try:
-    with open("config.json", "r", encoding="utf-8") as arquivo:
+    with open(config_path, "r", encoding="utf-8") as arquivo:
         regras = json.load(arquivo)
 except FileNotFoundError:
     logger.error(f"Arquivo de configuração não encontrado: {config_path}")
