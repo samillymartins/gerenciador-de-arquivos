@@ -39,23 +39,25 @@ class DatabaseService:
         self.conexao.commit()
 
     def salvar_movimentacao(self, arquivo, extensao, categoria, origem, destino, data_movimentacao):
+        try:
+            cursor = self.conexao.cursor()
 
-        cursor = self.conexao.cursor()
+            cursor.execute("""
+                INSERT INTO movimentacoes (
+                    arquivo,
+                    extensao,
+                    categoria,
+                    origem,
+                    destino,
+                    data_movimentacao
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, 
+            (arquivo, extensao, categoria, origem, destino, data_movimentacao))
 
-        cursor.execute("""
-            INSERT INTO movimentacoes (
-                arquivo,
-                extensao,
-                categoria,
-                origem,
-                destino,
-                data_movimentacao
-            )
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, 
-        (arquivo, extensao, categoria, origem, destino, data_movimentacao))
-
-        self.conexao.commit()
+            self.conexao.commit()
+        except sqlite3.Error as erro:
+            self.logger.error(f"Erro ao salvar movimentação no banco de dados: {erro}")       
 
     def total_movimentacoes(self):
 
