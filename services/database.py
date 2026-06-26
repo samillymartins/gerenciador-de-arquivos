@@ -103,18 +103,17 @@ class DatabaseService:
     
     def gerar_relatorio(self):
 
-        print("\n===== RELATÓRIO =====\n")
-        print(f"Total movimentações: {self.total_movimentacoes()}")
-
-        print("\nCategorias:")
+        saida =["\n===== RELATÓRIO =====\n", f"Total movimentações: {self.total_movimentacoes()}", "\nCategorias:"]
+        
         for categoria, total in (self.estatisticas_por_categoria()):
-            print(f"{categoria}: {total}")
+            saida.append(f"{categoria}: {total}")
 
-        print("\nÚltimos arquivos:")
+        saida.append("\nÚltimos arquivos:")
         for arquivo, categoria, data in (self.ultimas_movimentacoes()):
-
-            print(
-                f"{arquivo} "
-                f"({categoria}) "
-                f"- {data}"
-            )
+            saida.append(f"{arquivo} - ({categoria})- {data}")
+        
+        relatorio = "\n".join(saida)
+        if self.logger:
+            self.logger.info(relatorio)
+        else:
+            print(relatorio)
