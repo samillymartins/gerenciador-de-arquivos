@@ -1,0 +1,1 @@
+PASTA_DUPLICADOS = "Duplicados"
