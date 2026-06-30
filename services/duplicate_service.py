@@ -86,7 +86,7 @@ class DuplicateService:
                 self.logger.error(f"Erro ao mover arquivo duplicado '{nome_arquivo}': {erro}")
         
     def exibir_duplicados(self):
-        duplicados = (self.encontrar_duplicados())
+        duplicados = self._ultimos_duplicados
 
         if not duplicados:
             self.logger.info("\nNenhum arquivo duplicado encontrado.")
