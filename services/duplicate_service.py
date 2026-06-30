@@ -4,6 +4,7 @@ import time
 
 from core.constants import PASTA_DUPLICADOS
 from services.hash_service import HashService
+from utils.gerador_de_caminho_unico import gerar_caminho_unico
 
 class DuplicateService:
 
@@ -24,6 +25,16 @@ class DuplicateService:
                     yield caminho
     
     def encontrar_duplicados(self):
+        arquivos_por_tamanho = {}
+        
+        for caminho in self._listar_arquivos():
+            try:
+                tamanho = os.path.getsize(caminho)
+            except OSError as erro:
+                self.logger.error(f"Erro ao obter acessar o '{caminho}': {erro}")
+                continue
+            arquivos_por_tamanho.setdefault(tamanho, []).append(caminho)
+            
         hashes = {}
         duplicados = []
 
