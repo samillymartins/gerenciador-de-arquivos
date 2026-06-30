@@ -4,6 +4,8 @@ import time
 from datetime import datetime
 
 from services.duplicate_service import DuplicateService
+from utils.gerador_de_caminho_unico import gerar_caminho_unico
+from core.constants import PASTA_DUPLICADOS
 
 class Organizador:
     def __init__(self, pasta_alvo, regras, logger, database):
@@ -13,6 +15,16 @@ class Organizador:
         self.database = database
         
         self.duplicate_service = DuplicateService(pasta_alvo, logger)
+        self.mapa_extensoes = {}
+        for pasta, extensoes in regras.items():
+            for extensao in extensoes:
+                self.mapa_extensoes[extensao.lower()] = pasta
+        
+        self.processados = 0
+        self.movidos = 0
+        self.ignorados = 0
+        self.erros = 0
+        self.estatisticas = {}
 
     def exibir_resumo(self, tempo_total):
 
@@ -25,6 +37,7 @@ class Organizador:
         Arquivos movidos: {self.movidos}
         Ignorados: {self.ignorados}
         Erros: {self.erros}
+        Duplicados encontrados: {self.duplicate_service.duplicados_encontrados}
 
         Tempo total: {tempo_total}s
         ================================
