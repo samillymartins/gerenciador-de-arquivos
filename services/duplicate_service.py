@@ -2,6 +2,7 @@ import os
 import shutil
 import time
 
+from core.constants import PASTA_DUPLICADOS
 from services.hash_service import HashService
 
 class DuplicateService:
@@ -10,6 +11,18 @@ class DuplicateService:
         self.pasta_alvo = pasta_alvo
         self.logger = logger
         
+        self.duplicados_encontrados = 0
+        self.duplicados_movidos = 0
+        self._ultimos_duplicados = []
+        
+    def _listar_arquivos(self):
+        for raiz, diretorios, arquivos in os.walk(self.pasta_alvo):
+            diretorios = [d for d in diretorios if d != PASTA_DUPLICADOS]
+            for arquivo in arquivos:
+                caminho = os.path.join(raiz, arquivo)
+                if os.path.isfile(caminho):
+                    yield caminho
+    
     def encontrar_duplicados(self):
         hashes = {}
         duplicados = []
