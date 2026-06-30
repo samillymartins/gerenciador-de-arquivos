@@ -59,6 +59,19 @@ class DatabaseService:
         except sqlite3.Error as erro:
             self.logger.error(f"Erro ao salvar movimentação no banco de dados: {erro}")       
 
+    def salvar_movimentacoes_em_lote(self, movimentacoes):
+        try:
+            cursor = self.conexao.cursor()
+            cursor.executemany("""
+                INSERT INTO movimentacoes (
+                    arquivo, extensao, categoria, origem, destino, data_movimentacao
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, movimentacoes)
+            self.conexao.commit()
+        except sqlite3.Error as erro:
+            self.logger.error(f"Erro ao salvar movimentações em lote no banco de dados: {erro}")
+
     def total_movimentacoes(self):
 
         cursor = self.conexao.cursor()
