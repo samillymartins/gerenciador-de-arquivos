@@ -38,13 +38,12 @@ class DuplicateService:
         hashes = {}
         duplicados = []
 
-        for arquivo in os.listdir(self.pasta_alvo):
-                caminho_arquivo = os.path.join(self.pasta_alvo, arquivo)
-                
-                if not os.path.isfile(caminho_arquivo):
-                    continue
+        for tamanho, arquivos in arquivos_por_tamanho.items():
+            if len(arquivos) < 2:
+                continue
+            for arquivo in arquivos:      
                 try:
-                    hash_arquivo = (HashService.gerar_hash(caminho_arquivo))
+                    hash_arquivo = (HashService.gerar_hash(arquivo))
                     self.logger.info(f"Gerando hash para '{arquivo}': {hash_arquivo}")
 
                     if hash_arquivo in hashes:
@@ -52,35 +51,39 @@ class DuplicateService:
                             "original": hashes[hash_arquivo],
                             "duplicado": arquivo,
                             "hash": hash_arquivo,
-                            "tamanho": os.path.getsize(caminho_arquivo)})
-                        self.mover_para_duplicados(caminho_arquivo, arquivo)
+                            "tamanho": tamanho})
                         self.logger.warning(f"Arquivo duplicado encontrado: {arquivo} (hash: {hash_arquivo})")
-                      
                         continue
                     
                     hashes[hash_arquivo] = arquivo
                         
                 except Exception as erro:
                     self.logger.error(f"Erro ao gerar hash de "f"{arquivo}: {erro}")
-                    
                     continue
-
+                
+        self.duplicados_encontrados = len(duplicados)
+        self._ultimos_duplicados = duplicados
         return duplicados
     
-    def mover_para_duplicados(self, caminho_arquivo, arquivo):
-        pasta_duplicados = os.path.join(self.pasta_alvo, "Duplicados")
+    def mover_para_duplicados(self, duplicados=None):
+        duplicados = duplicados if duplicados is not None else self._ultimos_duplicados
+
+        pasta_duplicados = os.path.join(self.pasta_alvo, PASTA_DUPLICADOS)
             
         os.makedirs(pasta_duplicados, exist_ok=True)
-        destino = os.path.join(pasta_duplicados, arquivo)
+        
+        for info in duplicados:
+            caminho_origem = info["duplicado"]
+            nome_arquivo = os.path.basename(caminho_origem)
+            destino = gerar_caminho_unico(pasta_duplicados, nome_arquivo)
             
-        if os.path.exists(destino):
-            nome, extensao = os.path.splitext(arquivo)
-            destino = os.path.join(pasta_duplicados, f"{nome}_{int(time.time())}{extensao}")
+            try:
+                shutil.move(caminho_origem,destino)
+                self.duplicados_movidos += 1
 
-        shutil.move(caminho_arquivo,destino)
-        self.movidos += 1
-
-        self.logger.warning(f"Arquivo duplicado movido para Duplicados: {arquivo}")
+                self.logger.warning(f"Arquivo duplicado movido para Duplicados: {nome_arquivo}")
+            except Exception as erro:
+                self.logger.error(f"Erro ao mover arquivo duplicado '{nome_arquivo}': {erro}")
         
     def exibir_duplicados(self):
         duplicados = (self.encontrar_duplicados())
