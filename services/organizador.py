@@ -49,14 +49,16 @@ class Organizador:
             resumo += f"{categoria}: {quantidade}\n"
 
         self.logger.info(resumo)
+        
+    def listar_arquivos(self):
+        pastas_ignoradas = set(self.regras.keys())
+        pastas_ignoradas.add(PASTA_DUPLICADOS)
+        
+        for raiz, diretorios, arquivos in os.walk(self.pasta_alvo):
+            diretorios[:] = [d for d in diretorios if d not in pastas_ignoradas]
 
-    def organizar(self):
-        self.processados = 0
-        self.movidos = 0
-        self.ignorados = 0
-        self.erros = 0
-
-        self.estatisticas = {}
+            for arquivo in arquivos:
+                yield os.path.join(raiz, arquivo)
 
         inicio = time.time()
         for arquivo in os.listdir(self.pasta_alvo):
