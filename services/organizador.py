@@ -60,51 +60,51 @@ class Organizador:
             for arquivo in arquivos:
                 yield os.path.join(raiz, arquivo)
 
+    def organizar(self):
+        movimentacoes_db = []
         inicio = time.time()
-        for arquivo in os.listdir(self.pasta_alvo):
-
-            caminho_arquivo = os.path.join(self.pasta_alvo, arquivo)
-
-            if not os.path.isfile(caminho_arquivo):
+        
+        for arquivo in self.listar_arquivos():
+            if not os.path.isfile(arquivo):
                 continue
-
-            _, extensao = os.path.splitext(arquivo)
+            
             self.processados += 1
-            movido = False
+            nome_arquivo = os.path.basename(arquivo)
+            _, extensao = os.path.splitext(arquivo)
             
-            for pasta, extensoes in self.regras.items():
-                
-                if extensao.lower() in extensoes:
-                    destino = os.path.join(self.pasta_alvo, pasta)
+            pasta = self.mapa_extensoes.get(extensao.lower())
             
-                    os.makedirs(destino, exist_ok=True)
-                    try: 
-                        shutil.move(caminho_arquivo, destino)
-                        self.movidos += 1
-                        
-                        self.estatisticas[pasta] = self.estatisticas.get(pasta, 0) + 1
-                        
-                        data_movimentacao = datetime.now()
-
-                        self.database.salvar_movimentacao(arquivo, extensao, pasta, self.pasta_alvo, destino, data_movimentacao)
-                        
-                        self.logger.info(f"Movendo '{arquivo}' para '{destino}'.")
-                        
-                        movido = True
-                        break
-                    except Exception as erro:
-                        self.logger.error(f"Erro ao mover '{arquivo}': {erro}")
-                        self.erros += 1
-
-            if not movido:
+            if not pasta:
                 self.ignorados += 1
-                self.logger.warning(f"Extensão não mapeada: \n{arquivo}.")
+                self.logger.warning(f"Extensão não mapeada: {nome_arquivo}.")
+                continue
+            
+            destino_pasta = os.path.join(self.pasta_alvo, pasta)
+            try: 
+                os.makedirs(destino_pasta, exist_ok=True)
+                
+                destino = gerar_caminho_unico(destino_pasta, nome_arquivo)
+                shutil.move(arquivo, destino)
+                self.movidos += 1
+                self.estatisticas[pasta] = self.estatisticas.get(pasta, 0) + 1
+                        
+                movimentacoes_db.append((nome_arquivo, extensao, pasta, self.pasta_alvo, destino, datetime.now().isoformat()))
+                self.logger.info(f"Movendo '{nome_arquivo}' para '{destino}'.")
+                        
+            except Exception as erro:
+                self.logger.error(f"Erro ao mover '{nome_arquivo}': {erro}")
+                self.erros += 1
+
+        if movimentacoes_db:
+            if hasattr(self.database, 'salvar_movimentacoes_em_lote'):
+                    self.database.salvar_movimentacoes_em_lote(movimentacoes_db)
+            else:
+                    for movimentacao in movimentacoes_db:
+                        self.database.salvar_movimentacao(*movimentacao)
 
         fim = time.time()
         tempo_total = round(fim - inicio, 2)
-
         self.exibir_resumo(tempo_total)
-
         self.logger.info("Organização concluída!")
 
     def gerar_relatorio(self):
@@ -112,5 +112,6 @@ class Organizador:
         
     def processar(self):
         self.duplicate_service.encontrar_duplicados()
+        self.duplicate_service.mover_para_duplicados()
         self.organizar()
         self.gerar_relatorio()
