@@ -6,6 +6,7 @@ from datetime import datetime
 from services.duplicate_service import DuplicateService
 from utils.gerador_de_caminho_unico import gerar_caminho_unico
 from core.constants import PASTA_DUPLICADOS
+from services.cleanup_services import CleanupService
 
 class Organizador:
     def __init__(self, pasta_alvo, regras, logger, database):
@@ -15,6 +16,8 @@ class Organizador:
         self.database = database
         
         self.duplicate_service = DuplicateService(pasta_alvo, logger)
+        self.cleanup_service = CleanupService(pasta_alvo, logger)
+        
         self.mapa_extensoes = {}
         for pasta, extensoes in regras.items():
             for extensao in extensoes:
@@ -79,7 +82,9 @@ class Organizador:
                 self.logger.warning(f"Extensão não mapeada: {nome_arquivo}.")
                 continue
             
-            destino_pasta = os.path.join(self.pasta_alvo, pasta)
+            pasta_origem = os.path.dirname(arquivo)
+            destino_pasta = os.path.join(pasta_origem, pasta)
+            
             try: 
                 os.makedirs(destino_pasta, exist_ok=True)
                 
@@ -114,4 +119,5 @@ class Organizador:
         self.duplicate_service.encontrar_duplicados()
         self.duplicate_service.mover_para_duplicados()
         self.organizar()
+        self.cleanup_service.remover_pastas_vazias()
         self.gerar_relatorio()
