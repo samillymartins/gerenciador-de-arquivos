@@ -4,7 +4,3 @@ __pycache__/
 .env
 .idea/
 .vscode/
-database/*.db
-logs/*.log
-**/__pycache__/
-*.pyc
