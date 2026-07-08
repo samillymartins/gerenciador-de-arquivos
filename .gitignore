@@ -4,3 +4,8 @@ __pycache__/
 .env
 .idea/
 .vscode/
+database/*.db
+logs/*.log
+logs/*
+**/__pycache__/
+*.pyc
