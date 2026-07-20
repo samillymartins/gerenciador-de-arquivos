@@ -39,3 +39,16 @@ def criar_arquivo(tmp_path):
         return arquivo
 
     return _criar_arquivo
+
+@pytest.fixture
+def criar_pasta(tmp_path):
+    """
+    para criar pastas temporárias nos testes.
+    recebe caminho que pode ser tmp_path ou uma subpasta e o nome.
+    """
+    def _criar_pasta(tmp_path, nome):
+        caminho = tmp_path / nome
+        caminho.mkdir(parents=True, exist_ok=True)
+        return caminho
+
+    return _criar_pasta
