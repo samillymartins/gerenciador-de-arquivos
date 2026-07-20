@@ -5,21 +5,9 @@ import logging
 from services.duplicate_service import DuplicateService
 from core.constants import PASTA_DUPLICADOS
 
-
-@pytest.fixture
-def logger():
-    return logging.getLogger("teste")
-
 @pytest.fixture
 def service(tmp_path, logger):
     return DuplicateService(pasta_alvo=str(tmp_path), logger=logger)
-
-
-def criar_arquivo(tmp_path, nome, conteudo="conteudo"):
-    caminho = tmp_path / nome
-    caminho.write_text(conteudo, encoding="utf-8")
-    return caminho
-
 
 class TestEncontrarDuplicados:
 
@@ -29,7 +17,7 @@ class TestEncontrarDuplicados:
 
         assert resultado == []
 
-    def test_arquivos_unicos_nao_sao_duplicados(self, service, tmp_path):
+    def test_arquivos_unicos_nao_sao_duplicados(self, service, tmp_path, criar_arquivo):
         """Arquivos com conteúdos distintos não devem ser detectados como duplicados."""
         criar_arquivo(tmp_path, "a.txt", "conteudo A")
         criar_arquivo(tmp_path, "b.txt", "conteudo B")
@@ -38,7 +26,7 @@ class TestEncontrarDuplicados:
 
         assert resultado == []
 
-    def test_detecta_arquivos_com_mesmo_conteudo(self, service, tmp_path):
+    def test_detecta_arquivos_com_mesmo_conteudo(self, service, tmp_path, criar_arquivo):
         """Dois arquivos com mesmo conteúdo devem ser detectados como duplicados."""
         criar_arquivo(tmp_path, "original.txt", "conteudo igual")
         criar_arquivo(tmp_path, "copia.txt",    "conteudo igual")
@@ -47,7 +35,7 @@ class TestEncontrarDuplicados:
 
         assert len(resultado) == 1
 
-    def test_duplicado_contem_campos_esperados(self, service, tmp_path):
+    def test_duplicado_contem_campos_esperados(self, service, tmp_path, criar_arquivo):
         """Cada entrada da lista de duplicados deve conter original, duplicado, hash e tamanho."""
         criar_arquivo(tmp_path, "original.txt", "conteudo")
         criar_arquivo(tmp_path, "copia.txt",    "conteudo")
@@ -59,7 +47,7 @@ class TestEncontrarDuplicados:
         assert "hash"      in resultado[0]
         assert "tamanho"   in resultado[0]
 
-    def test_atualiza_contador_de_duplicados(self, service, tmp_path):
+    def test_atualiza_contador_de_duplicados(self, service, tmp_path, criar_arquivo):
         """duplicados_encontrados deve refletir o número de duplicados detectados."""
         criar_arquivo(tmp_path, "original.txt", "conteudo")
         criar_arquivo(tmp_path, "copia.txt",    "conteudo")
@@ -68,7 +56,7 @@ class TestEncontrarDuplicados:
 
         assert service.duplicados_encontrados == 1
 
-    def test_detecta_duplicados_em_subpastas(self, service, tmp_path):
+    def test_detecta_duplicados_em_subpastas(self, service, tmp_path, criar_arquivo):
         """Duplicados em subpastas devem ser detectados (varredura recursiva)."""
         criar_arquivo(tmp_path, "original.txt", "conteudo")
         subpasta = tmp_path / "subpasta"
@@ -79,7 +67,7 @@ class TestEncontrarDuplicados:
 
         assert len(resultado) == 1
 
-    def test_arquivos_mesmo_nome_conteudo_diferente_nao_sao_duplicados(self, service, tmp_path):
+    def test_arquivos_mesmo_nome_conteudo_diferente_nao_sao_duplicados(self, service, tmp_path, criar_arquivo):
         """Arquivos com mesmo nome mas conteúdo diferente não são duplicados."""
         criar_arquivo(tmp_path, "arquivo.txt", "conteudo A")
         subpasta = tmp_path / "subpasta"
@@ -93,7 +81,7 @@ class TestEncontrarDuplicados:
 
 class TestMoverDuplicados:
 
-    def test_move_duplicado_para_pasta_duplicados(self, service, tmp_path):
+    def test_move_duplicado_para_pasta_duplicados(self, service, tmp_path, criar_arquivo):
         """Arquivo duplicado deve ser movido para a pasta Duplicados."""
         criar_arquivo(tmp_path, "original.txt", "conteudo")
         criar_arquivo(tmp_path, "copia.txt",    "conteudo")
@@ -105,7 +93,7 @@ class TestMoverDuplicados:
         assert pasta_dup.exists()
         assert len(list(pasta_dup.iterdir())) == 1
 
-    def test_incrementa_contador_de_movidos(self, service, tmp_path):
+    def test_incrementa_contador_de_movidos(self, service, tmp_path, criar_arquivo):
         """duplicados_movidos deve ser incrementado após mover."""
         criar_arquivo(tmp_path, "original.txt", "conteudo")
         criar_arquivo(tmp_path, "copia.txt",    "conteudo")
@@ -115,7 +103,7 @@ class TestMoverDuplicados:
 
         assert service.duplicados_movidos == 1
 
-    def test_nao_sobrescreve_arquivo_existente_em_duplicados(self, service, tmp_path):
+    def test_nao_sobrescreve_arquivo_existente_em_duplicados(self, service, tmp_path, criar_arquivo):
         """Se já existir um arquivo com o mesmo nome em Duplicados, gera nome único."""
         criar_arquivo(tmp_path, "original.txt", "conteudo A")
         criar_arquivo(tmp_path, "copia_1.txt",  "conteudo A")
