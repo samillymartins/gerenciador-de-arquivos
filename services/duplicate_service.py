@@ -5,6 +5,7 @@ import time
 from core.constants import PASTA_DUPLICADOS
 from services.hash_service import HashService
 from utils.gerador_de_caminho_unico import gerar_caminho_unico
+from utils import varredura_de_arquivos
 
 class DuplicateService:
 
@@ -17,12 +18,7 @@ class DuplicateService:
         self._ultimos_duplicados = []
         
     def _listar_arquivos(self):
-        for raiz, diretorios, arquivos in os.walk(self.pasta_alvo):
-            diretorios = [d for d in diretorios if d != PASTA_DUPLICADOS]
-            for arquivo in arquivos:
-                caminho = os.path.join(raiz, arquivo)
-                if os.path.isfile(caminho):
-                    yield caminho
+        return varredura_de_arquivos.listar_arquivos(self.pasta_alvo, {PASTA_DUPLICADOS})
     
     def encontrar_duplicados(self):
         arquivos_por_tamanho = {}

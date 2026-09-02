@@ -5,6 +5,7 @@ from datetime import datetime
 
 from services.duplicate_service import DuplicateService
 from utils.gerador_de_caminho_unico import gerar_caminho_unico
+from utils import varredura_de_arquivos
 from core.constants import PASTA_DUPLICADOS
 from services.cleanup_services import CleanupService
 
@@ -56,21 +57,14 @@ class Organizador:
     def listar_arquivos(self):
         pastas_ignoradas = set(self.regras.keys())
         pastas_ignoradas.add(PASTA_DUPLICADOS)
-        
-        for raiz, diretorios, arquivos in os.walk(self.pasta_alvo):
-            diretorios[:] = [d for d in diretorios if d not in pastas_ignoradas]
 
-            for arquivo in arquivos:
-                yield os.path.join(raiz, arquivo)
+        return varredura_de_arquivos.listar_arquivos(self.pasta_alvo, pastas_ignoradas)
 
     def organizar(self):
         movimentacoes_db = []
         inicio = time.time()
         
         for arquivo in self.listar_arquivos():
-            if not os.path.isfile(arquivo):
-                continue
-            
             self.processados += 1
             nome_arquivo = os.path.basename(arquivo)
             _, extensao = os.path.splitext(arquivo)
@@ -101,11 +95,7 @@ class Organizador:
                 self.erros += 1
 
         if movimentacoes_db:
-            if hasattr(self.database, 'salvar_movimentacoes_em_lote'):
-                    self.database.salvar_movimentacoes_em_lote(movimentacoes_db)
-            else:
-                    for movimentacao in movimentacoes_db:
-                        self.database.salvar_movimentacao(*movimentacao)
+            self.database.salvar_movimentacoes_em_lote(movimentacoes_db)
 
         fim = time.time()
         tempo_total = round(fim - inicio, 2)
