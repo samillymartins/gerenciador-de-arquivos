@@ -29,5 +29,16 @@
     ],
     "Editáveis": [
         ".psd"
+    ],
+    "Markdown": [
+        ".md"
+    ],
+    "Outros": [
+        ".html",
+        ".xml",
+        ".json"
+    ],
+    "Iso": [
+        ".iso"
     ]
 }
